@@ -1,0 +1,6 @@
+node_modules
+.deploy-tools
+.pnpm-store
+.git
+.openai
+.env*.local

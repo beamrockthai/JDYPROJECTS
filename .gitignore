@@ -1,0 +1,8 @@
+node_modules/
+.deploy-tools/
+.vercel/
+.pnpm-store/
+dist/
+.env.local
+.env.*.local
+*-review.*
