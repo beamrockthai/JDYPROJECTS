@@ -60,8 +60,16 @@
     form.service = selectedService.value.en
     selectedService.value = null
   }
-  let observer
+  let sectionObserver
+  let revealObserver
   let previousFocus
+
+  function observeReveals() {
+    if (!revealObserver) return
+    const elements = document.querySelectorAll('.reveal')
+    elements.forEach((el) => revealObserver.observe(el))
+  }
+
   const closeModal = (e) => {
     if (e.key === 'Escape') {
       selectedService.value = null
@@ -91,8 +99,12 @@
       previousFocus?.focus()
     }
   })
+  watch(galleryFilter, async () => {
+    await nextTick()
+    observeReveals()
+  })
   onMounted(() => {
-    observer = new IntersectionObserver(
+    sectionObserver = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
           if (e.isIntersecting) {
@@ -101,11 +113,30 @@
         }),
       { rootMargin: '-20% 0px -60% 0px' },
     )
-    document.querySelectorAll('section[id]').forEach((el) => observer.observe(el))
+    document.querySelectorAll('section[id]').forEach((el) => sectionObserver.observe(el))
+
+    revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed')
+          } else {
+            entry.target.classList.remove('is-revealed')
+          }
+        })
+      },
+      {
+        threshold: 0.06,
+        rootMargin: '0px 0px -40px 0px',
+      },
+    )
+    observeReveals()
+
     window.addEventListener('keydown', closeModal)
   })
   onUnmounted(() => {
-    observer?.disconnect()
+    sectionObserver?.disconnect()
+    revealObserver?.disconnect()
     window.removeEventListener('keydown', closeModal)
     document.body.style.overflow = ''
   })
@@ -222,23 +253,23 @@
         fetchpriority="high"
       />
       <div class="hero-shade"></div>
-      <div class="container hero-inner">
-        <p class="eyebrow light">
+      <div class="container hero-inner reveal reveal-fade-up is-revealed">
+        <p class="eyebrow light hero-anim hero-anim-1">
           <span></span>
           YOUR PARTNER IN GLOBAL LOGISTICS
         </p>
-        <h1>
+        <h1 class="hero-anim hero-anim-2">
           {{ t('Connecting trade.') }}
           <br />
           {{ t('Caring for every') }}
           <span>{{ t('shipment.') }}</span>
         </h1>
-        <p class="hero-desc">
+        <p class="hero-desc hero-anim hero-anim-3">
           {{ t('Import, export, customs clearance and domestic transport.') }}
           <br class="desktop-br" />
           {{ t('Care for your cargo at every step of the journey.') }}
         </p>
-        <div class="hero-actions">
+        <div class="hero-actions hero-anim hero-anim-4">
           <a
             class="button primary"
             href="#contact"
@@ -254,12 +285,12 @@
             <ArrowRight :size="18" />
           </a>
         </div>
-        <div class="hero-note">
+        <div class="hero-note hero-anim hero-anim-5">
           <ShieldCheck :size="17" />
           {{ t('Fast · Accurate · Transparent · Reliable') }}
         </div>
       </div>
-      <div class="hero-bottom container">
+      <div class="hero-bottom container hero-anim hero-anim-6 reveal reveal-fade-up is-revealed">
         <span>JYD CORPORATION CO., LTD.</span>
         <a href="#about">
           {{ t('Get to know us') }}
@@ -274,8 +305,8 @@
     </section>
 
     <div class="service-strip">
-      <div class="container strip-grid">
-        <div class="strip-heading">
+      <div class="container strip-grid reveal reveal-stagger">
+        <div class="strip-heading reveal-child">
           <span class="eyebrow">CONNECTED. COVERED.</span>
           <strong>
             {{ t('Every route.') }}
@@ -283,24 +314,39 @@
             {{ t('Your business, connected.') }}
           </strong>
         </div>
-        <a href="#services">
-          <span class="icon-circle"><Ship /></span>
+        <a
+          href="#services"
+          class="reveal-child"
+        >
+          <span class="icon-circle">
+            <Ship />
+          </span>
           <div>
             <strong>Sea Freight</strong>
             <span>{{ t('Ocean cargo services') }}</span>
           </div>
           <ArrowUpRight :size="18" />
         </a>
-        <a href="#services">
-          <span class="icon-circle"><Plane /></span>
+        <a
+          href="#services"
+          class="reveal-child"
+        >
+          <span class="icon-circle">
+            <Plane />
+          </span>
           <div>
             <strong>Air Freight</strong>
             <span>{{ t('Air cargo services') }}</span>
           </div>
           <ArrowUpRight :size="18" />
         </a>
-        <a href="#services">
-          <span class="icon-circle"><Truck /></span>
+        <a
+          href="#services"
+          class="reveal-child"
+        >
+          <span class="icon-circle">
+            <Truck />
+          </span>
           <div>
             <strong>Land Transport</strong>
             <span>{{ t('Road cargo services') }}</span>
@@ -315,7 +361,7 @@
       class="section about-section"
     >
       <div class="container about-grid">
-        <div class="about-visual">
+        <div class="about-visual reveal reveal-fade-right">
           <img
             src="/images/port.jpg"
             :alt="t('Seaport and container operations')"
@@ -325,7 +371,7 @@
             <span class="label-line"></span>
             CONNECTING YOUR BUSINESS TO THE WORLD
           </div>
-          <div class="commitment">
+          <div class="commitment reveal-pop">
             <Globe2 :size="33" />
             <span>
               Your Cargo,
@@ -334,7 +380,7 @@
             </span>
           </div>
         </div>
-        <div class="about-copy">
+        <div class="about-copy reveal reveal-fade-left">
           <p class="eyebrow">GET TO KNOW JYD</p>
           <h2>
             {{ t('More than logistics.') }}
@@ -358,20 +404,20 @@
               )
             }}
           </p>
-          <div class="about-checks">
-            <span>
+          <div class="about-checks reveal-stagger">
+            <span class="reveal-child">
               <CheckCircle2 />
               {{ t('End-to-end logistics services') }}
             </span>
-            <span>
+            <span class="reveal-child">
               <CheckCircle2 />
               {{ t('Professional coordination') }}
             </span>
-            <span>
+            <span class="reveal-child">
               <CheckCircle2 />
               {{ t('Accurate documentation') }}
             </span>
-            <span>
+            <span class="reveal-child">
               <CheckCircle2 />
               {{ t('Regular progress updates') }}
             </span>
@@ -392,7 +438,7 @@
       class="section services-section"
     >
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal reveal-fade-up">
           <div>
             <p class="eyebrow">OUR EXPERTISE</p>
             <h2>
@@ -407,11 +453,11 @@
             {{ t('So you can focus on growing your business.') }}
           </p>
         </div>
-        <div class="services-grid">
+        <div class="services-grid reveal reveal-stagger">
           <button
             v-for="(service, index) in company.services"
             :key="service.en"
-            class="service-card"
+            class="service-card reveal-child"
             @click="selectedService = service"
           >
             <div class="card-top">
@@ -436,12 +482,12 @@
 
     <section class="why-section">
       <div class="container">
-        <div class="why-heading">
+        <div class="why-heading reveal reveal-fade-up">
           <p class="eyebrow light">WHY JYD CORPORATION</p>
           <h2>{{ t('Your cargo. Our commitment.') }}</h2>
           <p>{{ t('Committed to dependable service, giving you confidence at every step.') }}</p>
         </div>
-        <div class="values-grid">
+        <div class="values-grid reveal reveal-stagger">
           <div
             v-for="value in [
               {
@@ -470,6 +516,7 @@
               },
             ]"
             :key="value.en"
+            class="reveal-child"
           >
             <component
               :is="value.icon"
@@ -489,7 +536,7 @@
       class="section gallery-section"
     >
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal reveal-fade-up">
           <div>
             <p class="eyebrow">BEHIND EVERY DELIVERY</p>
             <h2>
@@ -518,11 +565,11 @@
             </button>
           </div>
         </div>
-        <div class="gallery-grid">
+        <div class="gallery-grid reveal reveal-stagger">
           <button
             v-for="item in filteredGallery"
             :key="item.src"
-            class="gallery-card"
+            class="gallery-card reveal-child"
             @click="selectedImage = item"
           >
             <img
@@ -530,20 +577,22 @@
               :alt="item.title"
               loading="lazy"
             />
-            <span class="expand-icon"><Maximize2 :size="18" /></span>
+            <span class="expand-icon">
+              <Maximize2 :size="18" />
+            </span>
             <div>
               <span>{{ item.label }}</span>
               <h3>{{ item.title }}</h3>
             </div>
           </button>
         </div>
-        <p class="gallery-caption">
+        <p class="gallery-caption reveal reveal-fade-up">
           {{ t('Operational photos from the JYD Corporation company profile.') }}
         </p>
       </div>
     </section>
 
-    <div class="contact-banner">
+    <div class="contact-banner reveal reveal-zoom">
       <div class="container">
         <Globe2
           :size="46"
@@ -568,7 +617,7 @@
       class="section contact-section"
     >
       <div class="container contact-grid">
-        <div>
+        <div class="reveal reveal-fade-right">
           <p class="eyebrow">GET IN TOUCH</p>
           <h2>
             {{ t('Ready to listen.') }}
@@ -582,7 +631,9 @@
           </p>
           <div class="contact-list">
             <a :href="`tel:${company.phone.replaceAll('-', '')}`">
-              <span class="contact-icon"><Phone :size="21" /></span>
+              <span class="contact-icon">
+                <Phone :size="21" />
+              </span>
               <div>
                 <small>{{ t('Call us') }}</small>
                 <strong>
@@ -593,7 +644,9 @@
               <ArrowUpRight :size="18" />
             </a>
             <a :href="`mailto:${company.email}`">
-              <span class="contact-icon"><Mail :size="21" /></span>
+              <span class="contact-icon">
+                <Mail :size="21" />
+              </span>
               <div>
                 <small>{{ t('Email') }}</small>
                 <strong>{{ company.email }}</strong>
@@ -601,7 +654,9 @@
               <ArrowUpRight :size="18" />
             </a>
             <div class="address">
-              <span class="contact-icon"><MapPin :size="21" /></span>
+              <span class="contact-icon">
+                <MapPin :size="21" />
+              </span>
               <div>
                 <small>{{ t('Operations center') }}</small>
                 <strong>{{ company.address }}</strong>
@@ -622,7 +677,7 @@
           </div>
         </div>
         <form
-          class="inquiry-form"
+          class="inquiry-form reveal reveal-fade-left"
           @submit.prevent="submitInquiry"
         >
           <div class="form-heading">
@@ -743,7 +798,7 @@
       </div>
     </section>
   </main>
-  <footer>
+  <footer class="reveal reveal-fade-up">
     <div class="container footer-main">
       <a
         class="footer-brand"
@@ -769,60 +824,62 @@
   </footer>
 
   <Teleport to="body">
-    <div
-      v-if="selectedService || selectedImage"
-      class="modal-backdrop"
-      @click.self="closeDetails"
-    >
-      <section
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
+    <Transition name="modal-fade">
+      <div
+        v-if="selectedService || selectedImage"
+        class="modal-backdrop"
+        @click.self="closeDetails"
       >
-        <button
-          autofocus
-          class="modal-close"
-          :aria-label="t('Close details')"
-          @click="closeDetails"
+        <section
+          class="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
         >
-          <X />
-        </button>
-        <template v-if="selectedService">
-          <component
-            :is="icons[selectedService.icon]"
-            class="blue"
-            :size="40"
-          />
-          <p class="eyebrow">{{ selectedService.en }}</p>
-          <h2 id="modal-title">{{ selectedService.title }}</h2>
-          <p class="body-copy">{{ selectedService.detail }}</p>
-          <div class="tags">
-            <span
-              v-for="tag in selectedService.tags"
-              :key="tag"
-            >
-              {{ tag }}
-            </span>
-          </div>
-          <a
-            href="#contact"
-            class="button primary"
-            @click="inquireAboutService"
+          <button
+            autofocus
+            class="modal-close"
+            :aria-label="t('Close details')"
+            @click="closeDetails"
           >
-            {{ t('Ask about this service') }}
-            <ArrowUpRight :size="18" />
-          </a>
-        </template>
-        <template v-else>
-          <img
-            class="modal-image"
-            :src="selectedImage.src"
-            :alt="selectedImage.title"
-          />
-          <h3 id="modal-title">{{ selectedImage.title }}</h3>
-        </template>
-      </section>
-    </div>
+            <X />
+          </button>
+          <template v-if="selectedService">
+            <component
+              :is="icons[selectedService.icon]"
+              class="blue"
+              :size="40"
+            />
+            <p class="eyebrow">{{ selectedService.en }}</p>
+            <h2 id="modal-title">{{ selectedService.title }}</h2>
+            <p class="body-copy">{{ selectedService.detail }}</p>
+            <div class="tags">
+              <span
+                v-for="tag in selectedService.tags"
+                :key="tag"
+              >
+                {{ tag }}
+              </span>
+            </div>
+            <a
+              href="#contact"
+              class="button primary"
+              @click="inquireAboutService"
+            >
+              {{ t('Ask about this service') }}
+              <ArrowUpRight :size="18" />
+            </a>
+          </template>
+          <template v-else>
+            <img
+              class="modal-image"
+              :src="selectedImage.src"
+              :alt="selectedImage.title"
+            />
+            <h3 id="modal-title">{{ selectedImage.title }}</h3>
+          </template>
+        </section>
+      </div>
+    </Transition>
   </Teleport>
 </template>
