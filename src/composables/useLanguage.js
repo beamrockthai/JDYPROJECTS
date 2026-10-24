@@ -1,8 +1,19 @@
 import { ref, watch } from 'vue'
 import thaiMessages from '../locales/th'
+import chineseMessages from '../locales/zh'
 
 const storageKey = 'jyd-language'
-const supportedLanguages = ['th', 'en']
+const supportedLanguages = ['th', 'en', 'zh']
+const messages = {
+  th: thaiMessages,
+  zh: chineseMessages,
+}
+const documentLanguages = { th: 'th', en: 'en', zh: 'zh-Hans' }
+const descriptions = {
+  th: 'JYD Corporation บริการนำเข้า ส่งออก พิธีการศุลกากร และขนส่งสินค้าภายในประเทศ',
+  en: 'JYD Corporation: import, export, customs clearance and domestic transportation.',
+  zh: 'JYD Corporation 提供进出口、报关清关及泰国境内货物运输服务。',
+}
 
 function readSavedLanguage() {
   try {
@@ -21,13 +32,9 @@ function readSavedLanguage() {
 export function useLanguage() {
   const language = ref(readSavedLanguage())
 
-  // English phrases are the message keys; Thai translations live in locales/th.js.
+  // English phrases are the keys; each translated language has its own locale file.
   function t(message) {
-    if (language.value === 'th') {
-      return thaiMessages[message] ?? message
-    }
-
-    return message
+    return messages[language.value]?.[message] ?? message
   }
 
   function setLanguage(nextLanguage) {
@@ -41,15 +48,12 @@ export function useLanguage() {
   watch(
     language,
     (currentLanguage) => {
-      document.documentElement.lang = currentLanguage
+      document.documentElement.lang = documentLanguages[currentLanguage]
 
       const description = document.querySelector('meta[name="description"]')
 
       if (description) {
-        description.content =
-          currentLanguage === 'en'
-            ? 'JYD Corporation: import, export, customs clearance and domestic transportation.'
-            : 'JYD Corporation บริการนำเข้า ส่งออก พิธีการศุลกากร และขนส่งสินค้าภายในประเทศ'
+        description.content = descriptions[currentLanguage]
       }
 
       try {

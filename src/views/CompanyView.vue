@@ -207,7 +207,7 @@
       <div
         class="language-switcher"
         role="group"
-        aria-label="Language / ภาษา"
+        aria-label="Language / ภาษา / 语言"
       >
         <button
           type="button"
@@ -227,6 +227,16 @@
           @click="setLanguage('en')"
         >
           EN
+        </button>
+        <span aria-hidden="true">/</span>
+        <button
+          type="button"
+          :class="{ selected: language === 'zh' }"
+          :aria-pressed="language === 'zh'"
+          aria-label="切换至简体中文"
+          @click="setLanguage('zh')"
+        >
+          中文
         </button>
       </div>
       <button

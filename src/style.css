@@ -1756,6 +1756,33 @@ html[lang='en'] nav {
   transform: scale(0.94) translateY(12px);
 }
 
+/* Chinese typography uses installed CJK fonts without another network request. */
+html[lang='zh-Hans'] body {
+  font-family: 'Manrope', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif;
+}
+
+html[lang='zh-Hans'] h1,
+html[lang='zh-Hans'] h2 {
+  letter-spacing: 0;
+}
+
+@media (min-width: 801px) and (max-width: 1050px) {
+  .brand > span {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand > span {
+    display: none;
+  }
+
+  .language-switcher button {
+    min-height: 40px;
+    padding-inline: 7px;
+  }
+}
+
 /* Mobile responsive adjustments for reveal directions */
 @media (max-width: 800px) {
   .reveal-fade-right,
