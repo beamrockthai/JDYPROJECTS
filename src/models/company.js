@@ -3,8 +3,12 @@ export function createCompany(t) {
   return {
     name: t('JYD Corporation Co., Ltd.'),
     email: 'Info@jydcorp.com',
+    managementEmail: 'Yada.jir@jydcorp.com',
     phone: '064-445-3944',
+    officePhone: '038-445-394',
     contact: t('Jane'),
+    contactRole: t('Management'),
+    contactPerson: t('Jane (Management)'),
     address: t('310/78 Nong Kham, Si Racha, Chon Buri, Thailand'),
     services: [
       {

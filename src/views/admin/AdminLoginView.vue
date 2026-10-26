@@ -10,7 +10,13 @@
     { code: 'en', label: 'EN', accessibleLabel: 'Switch to English' },
     { code: 'zh', label: '中文', accessibleLabel: '切换至简体中文' },
   ]
-  const { form, passwordVisible, togglePasswordVisibility, login } = useAdminLoginController()
+  const { form, passwordVisible, loading, error, togglePasswordVisibility, login } =
+    useAdminLoginController()
+  const errorMessages = {
+    invalid: 'Incorrect username or password.',
+    network: 'Unable to reach the database. Please try again.',
+    config: 'Database is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.',
+  }
 
   onMounted(() => {
     document.title = 'Admin Login | JYD Corporation'
@@ -126,20 +132,22 @@
             </button>
           </div>
 
+          <p
+            v-if="error"
+            class="admin-demo-note"
+            role="alert"
+            style="color: #c0392b"
+          >
+            {{ t(errorMessages[error]) }}
+          </p>
           <button
             class="admin-login-button"
             type="submit"
+            :disabled="loading"
           >
-            {{ t('Sign in') }}
+            {{ loading ? '...' : t('Sign in') }}
             <ArrowRight :size="19" />
           </button>
-          <p class="admin-demo-note">
-            {{
-              t(
-                'UI demo: enter any username and password to continue. No information is sent or saved.',
-              )
-            }}
-          </p>
         </form>
         <p class="admin-copyright">© {{ new Date().getFullYear() }} JYD Corporation Co., Ltd.</p>
       </div>

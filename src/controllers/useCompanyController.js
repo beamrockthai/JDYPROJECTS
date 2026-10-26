@@ -1,6 +1,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { createCompany } from '../models/company'
 import { useLanguage } from '../composables/useLanguage'
+import { createInquiry } from '../services/adminService'
 
 // UI controller. Replace submitInquiry with a Supabase service when the backend is ready.
 export function useCompanyController() {
@@ -12,13 +13,18 @@ export function useCompanyController() {
   const selectedImage = ref(null)
   const galleryFilter = ref('all')
   const inquirySubmitted = ref(false)
-  const formStatus = computed(() =>
-    inquirySubmitted.value
-      ? t(
-          'This is a demo form. Your information has not been sent to the company because submissions are not connected yet. Please contact us using the phone number or email shown.',
-        )
-      : '',
-  )
+  const submitting = ref(false)
+  const submitError = ref(false)
+  const formStatus = computed(() => {
+    if (submitError.value) {
+      return t(
+        'Sorry, we could not send your details. Please try again or contact us by phone or email.',
+      )
+    }
+    return inquirySubmitted.value
+      ? t('Thank you! We have received your details and our team will contact you shortly.')
+      : ''
+  })
   const form = reactive({
     name: '',
     company: '',
@@ -33,8 +39,28 @@ export function useCompanyController() {
       (item) => galleryFilter.value === 'all' || item.category === galleryFilter.value,
     ),
   )
-  function submitInquiry() {
-    inquirySubmitted.value = true
+  async function submitInquiry() {
+    if (submitting.value) return
+    submitting.value = true
+    submitError.value = false
+    inquirySubmitted.value = false
+    try {
+      await createInquiry(form)
+      inquirySubmitted.value = true
+      Object.assign(form, {
+        name: '',
+        company: '',
+        email: '',
+        phone: '',
+        service: '',
+        message: '',
+        consent: false,
+      })
+    } catch {
+      submitError.value = true
+    } finally {
+      submitting.value = false
+    }
   }
   function navigate(id) {
     activeSection.value = id
@@ -67,6 +93,7 @@ export function useCompanyController() {
     filteredGallery,
     form,
     formStatus,
+    submitting,
     submitInquiry,
     navigate,
   }

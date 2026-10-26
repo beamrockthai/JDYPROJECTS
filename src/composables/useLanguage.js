@@ -29,9 +29,30 @@ function readSavedLanguage() {
   return 'th'
 }
 
-export function useLanguage() {
-  const language = ref(readSavedLanguage())
+// Shared across every component so a language switch updates all views at once.
+const language = ref(readSavedLanguage())
 
+watch(
+  language,
+  (currentLanguage) => {
+    document.documentElement.lang = documentLanguages[currentLanguage]
+
+    const description = document.querySelector('meta[name="description"]')
+
+    if (description) {
+      description.content = descriptions[currentLanguage]
+    }
+
+    try {
+      window.localStorage.setItem(storageKey, currentLanguage)
+    } catch {
+      // Storage is optional: the current page still uses the selected language.
+    }
+  },
+  { immediate: true },
+)
+
+export function useLanguage() {
   // English phrases are the keys; each translated language has its own locale file.
   function t(message) {
     return messages[language.value]?.[message] ?? message
@@ -44,26 +65,6 @@ export function useLanguage() {
 
     language.value = nextLanguage
   }
-
-  watch(
-    language,
-    (currentLanguage) => {
-      document.documentElement.lang = documentLanguages[currentLanguage]
-
-      const description = document.querySelector('meta[name="description"]')
-
-      if (description) {
-        description.content = descriptions[currentLanguage]
-      }
-
-      try {
-        window.localStorage.setItem(storageKey, currentLanguage)
-      } catch {
-        // Storage is optional: the current page still uses the selected language.
-      }
-    },
-    { immediate: true },
-  )
 
   return { language, setLanguage, t }
 }

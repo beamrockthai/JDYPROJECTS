@@ -1,393 +1,289 @@
 <script setup>
   import {
-    ArrowUpRight,
-    CalendarDays,
+    CheckCircle2,
     Clock3,
-    CloudSun,
-    FileText,
-    Globe2,
-    Images,
-    LayoutDashboard,
-    LogOut,
-    MapPin,
-    Monitor,
+    Inbox,
+    Mail,
+    Phone,
+    RefreshCw,
+    Search,
+    Trash2,
+    Loader,
+    X,
   } from 'lucide-vue-next'
-  import { useAdminDashboardController } from '../../controllers/useAdminDashboardController'
+  import AdminLayout from '../../components/AdminLayout.vue'
+  import {
+    statusOptions,
+    useAdminDashboardController,
+  } from '../../controllers/useAdminDashboardController'
 
   const {
-    language,
-    setLanguage,
     t,
-    company,
-    currentDate,
-    currentTime,
-    serviceCount,
-    imageCount,
-    languageCount,
+    loading,
+    loadError,
+    search,
+    statusFilter,
+    counts,
+    filtered,
+    statusLabels,
+    selected,
+    notesDraft,
+    saving,
+    toast,
+    formatDate,
+    formatService,
+    load,
+    changeStatus,
+    openDetail,
+    closeDetail,
+    saveNotes,
+    removeInquiry,
   } = useAdminDashboardController()
 
-  const languageOptions = [
-    { code: 'th', label: 'TH', accessibleLabel: 'เปลี่ยนเป็นภาษาไทย' },
-    { code: 'en', label: 'EN', accessibleLabel: 'Switch to English' },
-    { code: 'zh', label: '中文', accessibleLabel: '切换至简体中文' },
+  const stats = [
+    { key: 'all', icon: Inbox, tone: 'blue' },
+    { key: 'pending', icon: Clock3, tone: 'amber' },
+    { key: 'contacted', icon: Phone, tone: 'teal' },
+    { key: 'in_progress', icon: Loader, tone: 'violet' },
+    { key: 'closed', icon: CheckCircle2, tone: 'green' },
   ]
 </script>
 
 <template>
-  <div class="dashboard-layout">
-    <aside class="dashboard-sidebar">
-      <div class="dashboard-brand">
-        JYD
-        <span>
-          CORPORATION
-          <br />
-          ADMIN PORTAL
-        </span>
-      </div>
-      <p class="sidebar-caption">{{ t('Workspace') }}</p>
-      <nav
-        class="dashboard-navigation"
-        :aria-label="t('Admin navigation')"
-      >
-        <a
-          href="/admin/dashboard"
-          class="sidebar-link active"
-          aria-current="page"
-        >
-          <LayoutDashboard :size="19" />
-          {{ t('Overview') }}
-        </a>
-        <a
-          href="/"
-          class="sidebar-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Monitor :size="19" />
-          {{ t('View website') }}
-          <ArrowUpRight :size="15" />
-        </a>
-      </nav>
-      <div class="sidebar-bottom">
-        <span class="sidebar-demo">{{ t('Demo workspace') }}</span>
-        <p>{{ t('Local interface only. No API connected.') }}</p>
-        <a
-          href="/admin"
-          class="sidebar-link"
-        >
-          <LogOut :size="18" />
-          {{ t('Back to sign in') }}
-        </a>
-      </div>
-    </aside>
+  <AdminLayout active="dashboard" :title="t('Dashboard')">
 
-    <div class="dashboard-main">
-      <header class="dashboard-topbar">
-        <div class="dashboard-breadcrumb">
-          JYD
-          <span>/</span>
-          {{ t('Overview') }}
-        </div>
-        <div
-          class="dashboard-languages"
-          role="group"
-          aria-label="Language / ภาษา / 语言"
-        >
-          <button
-            v-for="option in languageOptions"
-            :key="option.code"
-            type="button"
-            :class="{ selected: language === option.code }"
-            :aria-pressed="language === option.code"
-            :aria-label="option.accessibleLabel"
-            @click="setLanguage(option.code)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-      </header>
-
-      <main
-        class="dashboard-content"
-        aria-labelledby="dashboard-title"
-      >
+      <main class="dashboard-content" aria-labelledby="dashboard-title">
         <div class="dashboard-heading">
           <div>
-            <p class="dashboard-eyebrow">ADMIN OVERVIEW</p>
-            <h1 id="dashboard-title">{{ t('Welcome to your workspace') }}</h1>
-            <p class="dashboard-description">
-              {{ t('A quick look at your website content and today’s information.') }}
-            </p>
+            <p class="dashboard-eyebrow">ADMIN DASHBOARD</p>
+            <h1 id="dashboard-title">{{ t('Customer inquiries') }}</h1>
           </div>
-          <span class="demo-badge">{{ t('UI demo') }}</span>
+          <button type="button" class="refresh-button" :disabled="loading" @click="load">
+            <RefreshCw :size="16" :class="{ spin: loading }" />
+            {{ t('Refresh') }}
+          </button>
         </div>
 
-        <div class="dashboard-today-grid">
-          <section
-            class="dashboard-clock"
-            :aria-label="t('Current date and time')"
+        <section class="stat-grid">
+          <button
+            v-for="stat in stats"
+            :key="stat.key"
+            type="button"
+            class="stat-card"
+            :class="[stat.tone, { active: statusFilter === stat.key }]"
+            @click="statusFilter = stat.key"
           >
-            <div class="card-caption">
-              <CalendarDays :size="18" />
-              {{ t('Today') }}
-            </div>
-            <p class="clock-date">{{ currentDate }}</p>
-            <p
-              class="clock-time"
-              role="timer"
-              aria-live="off"
-            >
-              {{ currentTime }}
-            </p>
-            <div class="clock-timezone">
-              <Clock3 :size="15" />
-              {{ t('Thailand time') }} · UTC+7
-            </div>
-            <div
-              class="clock-decoration"
-              aria-hidden="true"
-            ></div>
-          </section>
-
-          <section
-            class="dashboard-card weather-card"
-            aria-labelledby="weather-title"
-          >
-            <div class="weather-heading">
-              <h2 id="weather-title">{{ t('Weather') }}</h2>
-              <span class="pending-badge">{{ t('Not connected') }}</span>
-            </div>
-            <p class="weather-location">
-              <MapPin :size="15" />
-              {{ t('Si Racha, Chon Buri') }}
-            </p>
-            <div class="weather-display">
-              <CloudSun
-                :size="58"
-                :stroke-width="1.2"
-              />
-              <span>
-                —
-                <small>°C</small>
-              </span>
-            </div>
-            <h3>{{ t('Weather data is not connected yet') }}</h3>
-            <p class="weather-note">
-              {{
-                t(
-                  'This space is reserved for local weather. No live readings or API requests are used.',
-                )
-              }}
-            </p>
-          </section>
-        </div>
-
-        <section
-          class="dashboard-content-summary"
-          aria-labelledby="content-summary-title"
-        >
-          <div class="dashboard-section-heading">
-            <h2 id="content-summary-title">{{ t('Website content') }}</h2>
-            <span>{{ t('From local project data') }}</span>
-          </div>
-          <div class="dashboard-stat-grid">
-            <article class="dashboard-card stat-card">
-              <span class="stat-icon"><FileText :size="22" /></span>
-              <div>
-                <p>{{ t('Service entries') }}</p>
-                <strong>{{ serviceCount }}</strong>
-              </div>
-              <span class="stat-caption">{{ t('Our services') }}</span>
-            </article>
-            <article class="dashboard-card stat-card">
-              <span class="stat-icon"><Images :size="22" /></span>
-              <div>
-                <p>{{ t('Gallery photos') }}</p>
-                <strong>{{ imageCount }}</strong>
-              </div>
-              <span class="stat-caption">{{ t('Our work') }}</span>
-            </article>
-            <article class="dashboard-card stat-card">
-              <span class="stat-icon"><Globe2 :size="22" /></span>
-              <div>
-                <p>{{ t('Available languages') }}</p>
-                <strong>{{ languageCount }}</strong>
-              </div>
-              <span class="stat-caption">TH · EN · 中文</span>
-            </article>
-          </div>
+            <span class="stat-icon"><component :is="stat.icon" :size="22" /></span>
+            <span class="stat-text">
+              <small>{{ stat.key === 'all' ? t('Total') : statusLabels[stat.key] }}</small>
+              <strong>{{ counts[stat.key] }}</strong>
+            </span>
+          </button>
         </section>
 
-        <section
-          class="dashboard-card company-summary"
-          aria-labelledby="company-summary-title"
-        >
-          <div>
-            <p class="dashboard-eyebrow">JYD CORPORATION</p>
-            <h2 id="company-summary-title">{{ t('Company information') }}</h2>
-            <p>{{ company.name }}</p>
-          </div>
-          <dl>
-            <div>
-              <dt>{{ t('Email') }}</dt>
-              <dd>{{ company.email }}</dd>
+        <section class="list-card" aria-labelledby="list-title">
+          <div class="list-toolbar">
+            <h2 id="list-title">{{ t('Inquiry list') }}</h2>
+            <div class="list-filters">
+              <label class="search-box">
+                <Search :size="16" />
+                <input
+                  v-model="search"
+                  type="search"
+                  :placeholder="t('Search name, company, phone, email...')"
+                />
+              </label>
+              <select v-model="statusFilter" :aria-label="t('Status')">
+                <option value="all">{{ t('All statuses') }}</option>
+                <option v-for="status in statusOptions" :key="status" :value="status">
+                  {{ statusLabels[status] }}
+                </option>
+              </select>
             </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="inquiry-table">
+              <thead>
+                <tr>
+                  <th>{{ t('Received') }}</th>
+                  <th>{{ t('Name') }}</th>
+                  <th>{{ t('Company') }}</th>
+                  <th>{{ t('Contact') }}</th>
+                  <th>{{ t('Service') }}</th>
+                  <th>{{ t('Message') }}</th>
+                  <th>{{ t('Status') }}</th>
+                  <th class="col-actions"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="loading">
+                  <td colspan="8" class="table-empty">{{ t('Loading...') }}</td>
+                </tr>
+                <tr v-else-if="loadError">
+                  <td colspan="8" class="table-empty error">
+                    {{ t('Failed to load data. Check the database connection.') }}
+                  </td>
+                </tr>
+                <tr v-else-if="!filtered.length">
+                  <td colspan="8" class="table-empty">{{ t('No inquiries found') }}</td>
+                </tr>
+                <template v-else>
+                  <tr
+                    v-for="item in filtered"
+                    :key="item.id"
+                    :class="{ fresh: item.status === 'pending' }"
+                    @click="openDetail(item)"
+                  >
+                    <td class="nowrap">{{ formatDate(item.created_at) }}</td>
+                    <td class="strong">{{ item.name }}</td>
+                    <td>{{ item.company || 'â€”' }}</td>
+                    <td class="contact-cell">
+                      <a :href="`tel:${item.phone}`" @click.stop>
+                        <Phone :size="13" /> {{ item.phone }}
+                      </a>
+                      <a :href="`mailto:${item.email}`" @click.stop>
+                        <Mail :size="13" /> {{ item.email }}
+                      </a>
+                    </td>
+                    <td class="nowrap">{{ formatService(item.service) }}</td>
+                    <td class="message-cell">{{ item.message }}</td>
+                    <td @click.stop>
+                      <select
+                        class="status-select"
+                        :class="item.status"
+                        :value="item.status"
+                        :aria-label="t('Status')"
+                        @change="changeStatus(item, $event.target.value)"
+                      >
+                        <option v-for="status in statusOptions" :key="status" :value="status">
+                          {{ statusLabels[status] }}
+                        </option>
+                      </select>
+                    </td>
+                    <td class="col-actions" @click.stop>
+                      <button
+                        type="button"
+                        class="icon-button danger"
+                        :aria-label="t('Delete')"
+                        @click="removeInquiry(item)"
+                      >
+                        <Trash2 :size="16" />
+                      </button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <p class="list-footer">
+            {{ t('Showing') }} {{ filtered.length }} {{ t('of') }} {{ counts.all }} {{ t('items') }}
+          </p>
+        </section>
+      </main>
+    </AdminLayout>
+
+    <Transition name="drawer">
+      <div v-if="selected" class="drawer-backdrop" @click.self="closeDetail">
+        <aside class="drawer" role="dialog" aria-modal="true" :aria-label="t('Message')">
+          <div class="drawer-head">
+            <div>
+              <p class="dashboard-eyebrow">#{{ selected.id }}</p>
+              <h2>{{ selected.name }}</h2>
+              <span class="drawer-company">{{ selected.company || '—' }}</span>
+            </div>
+            <button type="button" class="icon-button" :aria-label="t('Close')" @click="closeDetail">
+              <X :size="20" />
+            </button>
+          </div>
+
+          <dl class="drawer-info">
             <div>
               <dt>{{ t('Phone number') }}</dt>
-              <dd>{{ company.phone }}</dd>
+              <dd><a :href="`tel:${selected.phone}`">{{ selected.phone }}</a></dd>
             </div>
             <div>
-              <dt>{{ t('Operations center') }}</dt>
-              <dd>{{ company.address }}</dd>
+              <dt>{{ t('Email') }}</dt>
+              <dd><a :href="`mailto:${selected.email}`">{{ selected.email }}</a></dd>
+            </div>
+            <div>
+              <dt>{{ t('Service') }}</dt>
+              <dd>
+                <span>{{ formatService(selected.service) }}</span>
+                <span
+                  v-if="selected.service && formatService(selected.service) !== selected.service"
+                  class="service-secondary"
+                >
+                  ({{ selected.service }})
+                </span>
+              </dd>
+            </div>
+            <div>
+              <dt>{{ t('Received') }}</dt>
+              <dd>{{ formatDate(selected.created_at) }}</dd>
+            </div>
+            <div>
+              <dt>{{ t('Last contacted') }}</dt>
+              <dd>{{ formatDate(selected.contacted_at) }}</dd>
             </div>
           </dl>
-        </section>
-        <p class="dashboard-footer">
-          {{
-            t(
-              'Content counts are not visitor statistics. The admin area is a UI demo without authentication.',
-            )
-          }}
-        </p>
-      </main>
-    </div>
-  </div>
+
+          <h3>{{ t('Message') }}</h3>
+          <p class="drawer-message">{{ selected.message }}</p>
+
+          <label class="drawer-label" for="drawer-status">{{ t('Status') }}</label>
+          <select
+            id="drawer-status"
+            class="status-select wide"
+            :class="selected.status"
+            :value="selected.status"
+            @change="changeStatus(selected, $event.target.value)"
+          >
+            <option v-for="status in statusOptions" :key="status" :value="status">
+              {{ statusLabels[status] }}
+            </option>
+          </select>
+
+          <label class="drawer-label" for="drawer-notes">{{ t('Admin notes') }}</label>
+          <textarea
+            id="drawer-notes"
+            v-model="notesDraft"
+            rows="5"
+            :placeholder="t('Add a note after contacting the customer...')"
+          ></textarea>
+
+          <div class="drawer-actions">
+            <button type="button" class="primary-button" :disabled="saving" @click="saveNotes">
+              {{ t('Save') }}
+            </button>
+            <a class="secondary-button" :href="`tel:${selected.phone}`">
+              <Phone :size="16" /> {{ t('Call') }}
+            </a>
+            <button type="button" class="icon-button danger" :aria-label="t('Delete')" @click="removeInquiry(selected)">
+              <Trash2 :size="17" />
+            </button>
+          </div>
+        </aside>
+      </div>
+    </Transition>
+
+    <div v-if="toast" class="toast" role="status">{{ toast }}</div>
 </template>
 
 <style scoped>
-  .dashboard-layout {
-    min-height: 100dvh;
-    display: grid;
-    grid-template-columns: 230px minmax(0, 1fr);
-    background: #f3f6fa;
-  }
-  .dashboard-sidebar {
-    background: #102c48;
-    color: #d2e1ec;
-    padding: 35px 20px 20px;
-    display: flex;
-    flex-direction: column;
-  }
-  .dashboard-brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 0 9px 35px;
-    color: #fff;
-    font-size: 37px;
-    font-weight: 800;
-    letter-spacing: -2px;
-  }
-  .dashboard-brand span {
-    font-size: 8px;
-    letter-spacing: 1.4px;
-    line-height: 1.8;
-    border-left: 1px solid #ffffff30;
-    padding-left: 13px;
-  }
-  .sidebar-caption {
-    padding: 0 13px;
-    font-size: 10px;
-    color: #829db3;
-    margin: 10px 0;
-  }
-  .dashboard-navigation {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    height: auto;
-    gap: 6px;
-  }
-  .sidebar-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 13px;
-    font-size: 12px;
-    border-radius: 5px;
-    height: auto;
-  }
-  .sidebar-link.active {
-    background: #ffffff12;
-    color: #fff;
-  }
-  .sidebar-link:hover {
-    background: #ffffff0c;
-    color: #fff;
-  }
-  .sidebar-link::after {
-    display: none;
-  }
-  .sidebar-link > svg:last-child:not(:first-child) {
-    margin-left: auto;
-  }
-  .sidebar-bottom {
-    margin-top: auto;
-    padding-top: 55px;
-  }
-  .sidebar-demo {
-    display: inline-block;
-    background: #ffffff12;
-    padding: 5px 10px;
-    font-size: 9px;
-    border-radius: 4px;
-  }
-  .sidebar-bottom p {
-    font-size: 10px;
-    line-height: 1.9;
-    color: #8fa8bd;
-    margin: 10px 0 18px;
-  }
-  .dashboard-main {
-    min-width: 0;
-  }
-  .dashboard-topbar {
-    min-height: 76px;
-    background: #fff;
-    border-bottom: 1px solid #e5ebf1;
-    padding: 16px 36px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-  }
-  .dashboard-breadcrumb {
-    font-size: 12px;
-    font-weight: 600;
-  }
-  .dashboard-breadcrumb span {
-    margin: 0 12px;
-    color: #a1afbb;
-  }
-  .dashboard-languages {
-    display: flex;
-    gap: 4px;
-  }
-  .dashboard-languages button {
-    border: 0;
-    background: transparent;
-    color: #718495;
-    min-height: 40px;
-    padding: 8px 11px;
-    font-size: 11px;
-    font-weight: 600;
-    border-radius: 4px;
-  }
-  .dashboard-languages button.selected {
-    background: #edf6fb;
-    color: #0076be;
-  }
+  /* Full-width content area */
   .dashboard-content {
-    max-width: 1250px;
-    padding: 37px 36px;
-    margin: auto;
+    width: 100%;
+    max-width: none;
+    padding: 32px 36px 40px;
+    margin: 0;
   }
   .dashboard-heading {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
   .dashboard-eyebrow {
     color: #0082bf;
@@ -399,356 +295,485 @@
   .dashboard-heading h1 {
     font-size: 27px;
     font-weight: 600;
-    line-height: 1.5;
+    line-height: 1.4;
     letter-spacing: -0.5px;
   }
-  .dashboard-description {
-    font-size: 12px;
-    color: #7b8c9c;
-    margin-top: 9px;
-    line-height: 1.8;
-  }
-  .demo-badge,
-  .pending-badge {
-    flex-shrink: 0;
-    font-size: 9px;
-    padding: 6px 10px;
-    border-radius: 4px;
-    background: #e7edf3;
-    color: #6d8295;
-  }
-  .dashboard-today-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 21px;
-  }
-  .dashboard-card {
-    border: 1px solid #e2eaf1;
+  .refresh-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #d9e3ec;
     background: #fff;
-    border-radius: 8px;
-    padding: 25px;
-  }
-  .dashboard-clock {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(125deg, #123653, #07597e);
-    color: #fff;
-    padding: 29px;
-    border-radius: 8px;
-    min-height: 264px;
-  }
-  .card-caption {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    color: #a8d1e8;
+    color: #234;
+    padding: 10px 16px;
+    border-radius: 6px;
     font-size: 12px;
-    position: relative;
-    z-index: 1;
-  }
-  .clock-date {
-    margin-top: 19px;
-    font-size: 15px;
-    line-height: 1.8;
-    position: relative;
-    z-index: 1;
-  }
-  .clock-time {
-    font-size: clamp(35px, 4.2vw, 58px);
     font-weight: 600;
-    letter-spacing: 1px;
-    font-variant-numeric: tabular-nums;
-    position: relative;
-    z-index: 1;
-    line-height: 1.5;
-    margin: 5px 0 14px;
+    cursor: pointer;
   }
-  .clock-timezone {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 10px;
-    color: #a8cadd;
-    position: relative;
-    z-index: 1;
+  .refresh-button:hover {
+    border-color: #0082bf;
+    color: #0082bf;
   }
-  .clock-decoration {
-    position: absolute;
-    width: 235px;
-    height: 235px;
-    border-radius: 50%;
-    border: 30px solid #ffffff07;
-    right: -70px;
-    bottom: -65px;
-    box-shadow: 0 0 0 30px #ffffff04;
+  .spin {
+    animation: spin 0.9s linear infinite;
   }
-  .weather-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
-  .dashboard-card h2 {
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0;
-  }
-  .weather-location {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    color: #8294a4;
-    margin-top: 8px;
-  }
-  .weather-display {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 17px 0;
-    color: #8baabc;
-  }
-  .weather-display > span {
-    color: #9aaab7;
-    font-size: 38px;
-    font-weight: 500;
-  }
-  .weather-display small {
-    font-size: 19px;
-    font-weight: 400;
-  }
-  .weather-card h3 {
-    font-size: 12px;
-    font-weight: 500;
-    margin-bottom: 7px;
-  }
-  .weather-note {
-    color: #8898a5;
-    font-size: 10px;
-    line-height: 1.9;
-  }
-  .dashboard-content-summary {
-    margin: 29px 0 23px;
-  }
-  .dashboard-section-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
-  }
-  .dashboard-section-heading h2 {
-    font-size: 16px;
-    font-weight: 600;
-  }
-  .dashboard-section-heading > span {
-    font-size: 9px;
-    color: #8b9ba8;
-  }
-  .dashboard-stat-grid {
+
+  .stat-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
   }
   .stat-card {
     display: flex;
     align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-    padding: 23px;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid #e2eaf1;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition:
+      transform 0.15s,
+      box-shadow 0.15s,
+      border-color 0.15s;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px #10304a14;
+  }
+  .stat-card.active {
+    border-color: #0082bf;
+    box-shadow: 0 0 0 3px #0082bf22;
   }
   .stat-icon {
     display: grid;
     place-items: center;
-    width: 45px;
-    height: 45px;
-    background: #eef6fa;
-    color: #087fb4;
-    border-radius: 7px;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
     flex-shrink: 0;
   }
-  .stat-card p {
+  .stat-card.blue .stat-icon {
+    background: #e6f2fa;
+    color: #0678b3;
+  }
+  .stat-card.amber .stat-icon {
+    background: #fff3dc;
+    color: #c07a00;
+  }
+  .stat-card.teal .stat-icon {
+    background: #dff5f2;
+    color: #0b8a7e;
+  }
+  .stat-card.violet .stat-icon {
+    background: #eee9fb;
+    color: #6a49c4;
+  }
+  .stat-card.green .stat-icon {
+    background: #e2f6e8;
+    color: #1d8a45;
+  }
+  .stat-text small {
+    display: block;
     font-size: 11px;
     color: #7c8f9f;
   }
-  .stat-card strong {
+  .stat-text strong {
     display: block;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
+    line-height: 1.4;
+    color: #14293c;
+  }
+
+  .list-card {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e2eaf1;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .list-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    border-bottom: 1px solid #edf1f5;
+    flex-wrap: wrap;
+  }
+  .list-toolbar h2 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .list-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #d9e3ec;
+    border-radius: 6px;
+    padding: 0 12px;
+    background: #fafcfe;
+    color: #7c8f9f;
+    min-width: 280px;
+  }
+  .search-box input {
+    border: 0;
+    background: transparent;
+    outline: 0;
+    padding: 10px 0;
+    font-size: 12px;
+    width: 100%;
+    font-family: inherit;
+  }
+  .list-filters > select {
+    border: 1px solid #d9e3ec;
+    border-radius: 6px;
+    padding: 0 12px;
+    font-size: 12px;
+    background: #fafcfe;
+    font-family: inherit;
+    min-height: 40px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+  }
+  .inquiry-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .inquiry-table th {
+    text-align: left;
+    padding: 13px 16px;
+    font-size: 10px;
+    letter-spacing: 0.4px;
+    color: #7c8f9f;
+    background: #f7f9fc;
+    border-bottom: 1px solid #e7edf3;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .inquiry-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eef2f6;
+    vertical-align: top;
     line-height: 1.6;
   }
-  .stat-caption {
-    width: 100%;
-    border-top: 1px solid #edf1f5;
-    padding-top: 12px;
-    color: #8b9ba8;
-    font-size: 9px;
+  .inquiry-table tbody tr {
+    cursor: pointer;
+    transition: background 0.12s;
   }
-  .company-summary {
-    display: grid;
-    grid-template-columns: 1fr 1.3fr;
-    gap: 25px;
+  .inquiry-table tbody tr:hover {
+    background: #f5f9fd;
   }
-  .company-summary > div > p:last-child {
-    margin-top: 8px;
-    font-size: 11px;
-    color: #8494a2;
-    line-height: 1.8;
+  .inquiry-table tbody tr.fresh td:first-child {
+    box-shadow: inset 3px 0 0 #f0a020;
   }
-  .company-summary dl {
-    margin: 0;
+  .nowrap {
+    white-space: nowrap;
   }
-  .company-summary dl > div {
-    display: grid;
-    grid-template-columns: 105px 1fr;
-    gap: 13px;
-    padding: 7px 0;
-    font-size: 11px;
-    line-height: 1.9;
+  .strong {
+    font-weight: 600;
+    color: #14293c;
   }
-  .company-summary dt {
+  .contact-cell a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #31566f;
+    white-space: nowrap;
+  }
+  .contact-cell a:hover {
+    color: #0082bf;
+  }
+  .message-cell {
+    max-width: 340px;
+    color: #55697a;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .col-actions {
+    width: 50px;
+    text-align: center;
+  }
+  .table-empty {
+    text-align: center;
+    padding: 60px 16px !important;
     color: #8798a6;
   }
-  .company-summary dd {
+  .table-empty.error {
+    color: #c0392b;
+  }
+  .list-footer {
+    padding: 14px 22px;
+    font-size: 11px;
+    color: #8b9ba8;
+    border-top: 1px solid #edf1f5;
+  }
+
+  .status-select {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    min-height: 32px;
+  }
+  .status-select.wide {
+    width: 100%;
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .status-select.pending {
+    background: #fff3dc;
+    color: #a86a00;
+  }
+  .status-select.contacted {
+    background: #dff5f2;
+    color: #0b786e;
+  }
+  .status-select.in_progress {
+    background: #eee9fb;
+    color: #5b3fb0;
+  }
+  .status-select.closed {
+    background: #e2f6e8;
+    color: #1a773c;
+  }
+
+  .icon-button {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #7c8f9f;
+    cursor: pointer;
+  }
+  .icon-button:hover {
+    background: #eef3f8;
+    color: #14293c;
+  }
+  .icon-button.danger:hover {
+    background: #fdecea;
+    color: #c0392b;
+  }
+
+  .drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 29, 45, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: flex-end;
+    z-index: 50;
+  }
+  .drawer {
+    width: min(480px, 100%);
+    background: #fff;
+    height: 100%;
+    overflow-y: auto;
+    padding: 28px;
+    box-shadow: -12px 0 40px rgba(11, 29, 45, 0.2);
+    will-change: transform;
+  }
+
+  /* Smooth Slide & Fade Transition */
+  .drawer-enter-active,
+  .drawer-leave-active {
+    transition: opacity 0.28s ease;
+  }
+  .drawer-enter-active .drawer,
+  .drawer-leave-active .drawer {
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .drawer-enter-from,
+  .drawer-leave-to {
+    opacity: 0;
+  }
+  .drawer-enter-from .drawer,
+  .drawer-leave-to .drawer {
+    transform: translateX(100%);
+  }
+  .drawer-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .drawer-head h2 {
+    font-size: 21px;
+    font-weight: 600;
+  }
+  .drawer-company {
+    font-size: 12px;
+    color: #7c8f9f;
+  }
+  .drawer-info {
+    margin: 0 0 20px;
+    border: 1px solid #edf1f5;
+    border-radius: 8px;
+    padding: 6px 16px;
+  }
+  .drawer-info > div {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 12px;
+    border-bottom: 1px solid #f1f4f7;
+  }
+  .drawer-info > div:last-child {
+    border-bottom: 0;
+  }
+  .drawer-info dt {
+    color: #8798a6;
+  }
+  .drawer-info dd {
     margin: 0;
     overflow-wrap: anywhere;
   }
-  .dashboard-footer {
-    margin-top: 18px;
-    color: #95a3af;
-    font-size: 9px;
-    line-height: 1.9;
+  .service-secondary {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 11px;
+    color: #8fa0af;
+    font-weight: 400;
   }
+  .drawer-info a {
+    color: #0678b3;
+  }
+  .drawer h3 {
+    font-size: 12px;
+    color: #7c8f9f;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .drawer-message {
+    background: #f7f9fc;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 13px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin-bottom: 20px;
+  }
+  .drawer-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 16px 0 8px;
+    color: #31566f;
+  }
+  .drawer textarea {
+    width: 100%;
+    border: 1px solid #d9e3ec;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .drawer-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .primary-button,
+  .secondary-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid transparent;
+  }
+  .primary-button {
+    background: #0082bf;
+    color: #fff;
+  }
+  .primary-button:hover {
+    background: #006fa5;
+  }
+  .primary-button:disabled {
+    opacity: 0.6;
+  }
+  .secondary-button {
+    background: #fff;
+    border-color: #d9e3ec;
+    color: #14293c;
+  }
+  .secondary-button:hover {
+    border-color: #0082bf;
+    color: #0082bf;
+  }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #102c48;
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 12px;
+    z-index: 60;
+    box-shadow: 0 10px 30px #0b1d2d44;
+  }
+
   @media (max-width: 1150px) {
-    .dashboard-layout {
-      grid-template-columns: 195px minmax(0, 1fr);
-    }
-    .dashboard-sidebar {
-      padding-inline: 14px;
-    }
     .dashboard-content {
-      padding: 28px 23px;
+      padding: 26px 22px;
     }
-    .dashboard-topbar {
-      padding-inline: 23px;
-    }
-    .dashboard-today-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
-    .stat-card {
-      padding: 19px;
-      gap: 10px;
-    }
-    .company-summary {
-      grid-template-columns: 1fr;
-      gap: 15px;
+    .stat-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
   @media (max-width: 800px) {
-    .dashboard-layout {
-      grid-template-columns: 1fr;
-    }
-    .dashboard-sidebar {
-      padding: 16px 20px;
-      flex-direction: row;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .dashboard-brand {
-      padding: 0;
-      font-size: 30px;
-    }
-    .dashboard-brand span {
-      font-size: 7px;
-    }
-    .sidebar-caption,
-    .sidebar-bottom {
-      display: none;
-    }
-    .dashboard-navigation {
-      position: static;
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      padding: 0;
-      background: transparent;
-      box-shadow: none;
-      gap: 4px;
-    }
-    .dashboard-navigation .sidebar-link {
-      font-size: 11px;
-      padding: 10px;
-    }
-    .dashboard-topbar {
-      min-height: 65px;
-      padding: 10px 20px;
-    }
     .dashboard-content {
-      padding: 25px 20px;
+      padding: 22px 16px;
     }
     .dashboard-heading h1 {
-      font-size: 23px;
+      font-size: 22px;
     }
-    .clock-time {
-      font-size: 39px;
+    .stat-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
     }
-    .dashboard-clock {
-      padding: 23px;
-    }
-    .dashboard-card {
-      padding: 20px;
-    }
-    .dashboard-stat-grid {
-      gap: 11px;
-    }
-    .stat-icon {
-      width: 36px;
-      height: 36px;
+    .search-box {
+      min-width: 0;
+      flex: 1;
     }
   }
-  @media (max-width: 540px) {
-    .dashboard-today-grid {
-      grid-template-columns: 1fr;
-    }
-    .dashboard-clock {
-      min-height: 240px;
-    }
-    .clock-time {
-      font-size: 48px;
-    }
-    .dashboard-stat-grid {
-      grid-template-columns: 1fr;
-    }
-    .stat-card {
-      flex-wrap: nowrap;
-    }
-    .stat-caption {
-      width: auto;
-      margin-left: auto;
-      padding-top: 0;
-      border: 0;
-    }
-    .dashboard-heading {
-      align-items: flex-start;
-      gap: 10px;
-    }
-    .demo-badge {
-      padding: 5px 7px;
-      font-size: 8px;
-    }
-    .dashboard-heading h1 {
-      font-size: 21px;
-    }
-    .dashboard-section-heading {
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .company-summary dl > div {
-      grid-template-columns: 85px 1fr;
-      font-size: 10px;
-    }
-  }
+
 </style>
