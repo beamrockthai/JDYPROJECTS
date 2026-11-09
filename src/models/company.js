@@ -1,3 +1,5 @@
+import { createWorkGallery } from './workGallery'
+
 // Content model: verified company information from the supplied company profile.
 export function createCompany(t) {
   return {
@@ -83,6 +85,7 @@ export function createCompany(t) {
       },
     ],
     gallery: [
+      ...createWorkGallery(t),
       {
         src: '/images/work-1.jpg',
         title: t('Care at every step of transportation'),

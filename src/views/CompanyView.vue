@@ -1,162 +1,169 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
-import {
-  ArrowUpRight,
-  ArrowRight,
-  Globe2,
-  FileCheck2,
-  Truck,
-  MessagesSquare,
-  Files,
-  Warehouse,
-  Menu,
-  X,
-  Phone,
-  PhoneCall,
-  Smartphone,
-  Mail,
-  MapPin,
-  ShieldCheck,
-  Zap,
-  Handshake,
-  Check,
-  ChevronDown,
-  MoveUpRight,
-  Ship,
-  Plane,
-  MessageCircle,
-  Maximize2,
-  CheckCircle2,
-} from 'lucide-vue-next'
-import { useCompanyController } from '../controllers/useCompanyController'
-const {
-  company,
-  language,
-  setLanguage,
-  t,
-  menuOpen,
-  activeSection,
-  selectedService,
-  selectedImage,
-  galleryFilter,
-  filteredGallery,
-  form,
-  formStatus,
-  submitting,
-  submitInquiry,
-  navigate,
-} = useCompanyController()
-const icons = { Globe2, FileCheck2, Truck, MessagesSquare, Files, Warehouse }
-const navigation = computed(() => [
-  { id: 'home', label: t('Home') },
-  { id: 'about', label: t('About us') },
-  { id: 'services', label: t('Our services') },
-  { id: 'work', label: t('Our work') },
-  { id: 'contact', label: t('Contact us') },
-])
-const aboutDescription1 = computed(() =>
-  t(
-    'We provide logistics services covering international import and export, customs clearance and trucking. Our focus is professional service, speed and accuracy, tailored to your needs.',
-  ),
-)
-const aboutDescription2 = computed(() =>
-  t(
-    'From planning and document checks to destination coordination, we take care of every step so your business can move forward smoothly.',
-  ),
-)
-function closeDetails() {
-  selectedService.value = null
-  selectedImage.value = null
-}
-
-function inquireAboutService() {
-  form.service = selectedService.value.en
-  selectedService.value = null
-}
-let sectionObserver
-let revealObserver
-let previousFocus
-
-function observeReveals() {
-  if (!revealObserver) return
-  const elements = document.querySelectorAll('.reveal')
-  elements.forEach((el) => revealObserver.observe(el))
-}
-
-const closeModal = (e) => {
-  if (e.key === 'Escape') {
+  import { computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
+  import {
+    ArrowUpRight,
+    ArrowRight,
+    Globe2,
+    FileCheck2,
+    Truck,
+    MessagesSquare,
+    Files,
+    Warehouse,
+    Menu,
+    X,
+    Phone,
+    PhoneCall,
+    Smartphone,
+    Mail,
+    MapPin,
+    ShieldCheck,
+    Zap,
+    Handshake,
+    Check,
+    ChevronDown,
+    MoveUpRight,
+    Ship,
+    Plane,
+    MessageCircle,
+    Maximize2,
+    CheckCircle2,
+  } from 'lucide-vue-next'
+  import { useCompanyController } from '../controllers/useCompanyController'
+  import ContactQrCodes from '../components/ContactQrCodes.vue'
+  const {
+    company,
+    language,
+    setLanguage,
+    t,
+    menuOpen,
+    activeSection,
+    selectedService,
+    selectedImage,
+    galleryFilter,
+    filteredGallery,
+    visibleGallery,
+    galleryExpanded,
+    toggleGallery,
+    form,
+    formStatus,
+    submitting,
+    submitInquiry,
+    navigate,
+  } = useCompanyController()
+  const icons = { Globe2, FileCheck2, Truck, MessagesSquare, Files, Warehouse }
+  const navigation = computed(() => [
+    { id: 'home', label: t('Home') },
+    { id: 'about', label: t('About us') },
+    { id: 'services', label: t('Our services') },
+    { id: 'work', label: t('Our work') },
+    { id: 'contact', label: t('Contact us') },
+  ])
+  const aboutDescription1 = computed(() =>
+    t(
+      'We provide logistics services covering international import and export, customs clearance and trucking. Our focus is professional service, speed and accuracy, tailored to your needs.',
+    ),
+  )
+  const aboutDescription2 = computed(() =>
+    t(
+      'From planning and document checks to destination coordination, we take care of every step so your business can move forward smoothly.',
+    ),
+  )
+  function closeDetails() {
     selectedService.value = null
     selectedImage.value = null
-    menuOpen.value = false
   }
-  if (e.key === 'Tab' && (selectedService.value || selectedImage.value)) {
-    const items = [...document.querySelectorAll('.modal button, .modal a[href]')]
-    const first = items[0],
-      last = items[items.length - 1]
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault()
-      last?.focus()
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault()
-      first?.focus()
+
+  function inquireAboutService() {
+    form.service = selectedService.value.en
+    selectedService.value = null
+  }
+  let sectionObserver
+  let revealObserver
+  let previousFocus
+
+  function observeReveals() {
+    if (!revealObserver) return
+    const elements = document.querySelectorAll('.reveal')
+    elements.forEach((el) => revealObserver.observe(el))
+  }
+
+  const closeModal = (e) => {
+    if (e.key === 'Escape') {
+      selectedService.value = null
+      selectedImage.value = null
+      menuOpen.value = false
+    }
+    if (e.key === 'Tab' && (selectedService.value || selectedImage.value)) {
+      const items = [...document.querySelectorAll('.modal button, .modal a[href]')]
+      const first = items[0],
+        last = items[items.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last?.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first?.focus()
+      }
     }
   }
-}
-watch([selectedService, selectedImage], async ([service, img]) => {
-  document.body.style.overflow = service || img ? 'hidden' : ''
-  if (service || img) {
-    previousFocus = document.activeElement
+  watch([selectedService, selectedImage], async ([service, img]) => {
+    document.body.style.overflow = service || img ? 'hidden' : ''
+    if (service || img) {
+      previousFocus = document.activeElement
+      await nextTick()
+      document.querySelector('.modal-close')?.focus()
+    } else {
+      previousFocus?.focus()
+    }
+  })
+  watch(visibleGallery, async () => {
     await nextTick()
-    document.querySelector('.modal-close')?.focus()
-  } else {
-    previousFocus?.focus()
-  }
-})
-watch(galleryFilter, async () => {
-  await nextTick()
-  observeReveals()
-})
-onMounted(() => {
-  sectionObserver = new IntersectionObserver(
-    (entries) =>
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          activeSection.value = e.target.id
-        }
-      }),
-    { rootMargin: '-20% 0px -60% 0px' },
-  )
-  document.querySelectorAll('section[id]').forEach((el) => sectionObserver.observe(el))
+    observeReveals()
+  })
+  onMounted(() => {
+    sectionObserver = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            activeSection.value = e.target.id
+          }
+        }),
+      { rootMargin: '-20% 0px -60% 0px' },
+    )
+    document.querySelectorAll('section[id]').forEach((el) => sectionObserver.observe(el))
 
-  revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-revealed')
-        } else {
-          entry.target.classList.remove('is-revealed')
-        }
-      })
-    },
-    {
-      threshold: 0.06,
-      rootMargin: '0px 0px -40px 0px',
-    },
-  )
-  observeReveals()
+    revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed')
+          } else {
+            entry.target.classList.remove('is-revealed')
+          }
+        })
+      },
+      {
+        threshold: 0.06,
+        rootMargin: '0px 0px -40px 0px',
+      },
+    )
+    observeReveals()
 
-  window.addEventListener('keydown', closeModal)
-})
-onUnmounted(() => {
-  sectionObserver?.disconnect()
-  revealObserver?.disconnect()
-  window.removeEventListener('keydown', closeModal)
-  document.body.style.overflow = ''
-})
+    window.addEventListener('keydown', closeModal)
+  })
+  onUnmounted(() => {
+    sectionObserver?.disconnect()
+    revealObserver?.disconnect()
+    window.removeEventListener('keydown', closeModal)
+    document.body.style.overflow = ''
+  })
 </script>
 
 <template>
-  <a class="skip" href="#main">
+  <a
+    class="skip"
+    href="#main"
+  >
     {{ t('Skip to content') }}
   </a>
   <div class="topbar">
@@ -177,42 +184,88 @@ onUnmounted(() => {
   </div>
   <header class="header">
     <div class="container nav-inner">
-      <a href="#home" class="brand" :aria-label="t('JYD Corporation home')" @click="navigate('home')">
-        <img src="/images/logo_transparent.png" alt="JYD" />
-        <span>
-          CORPORATION
-          <small>CO., LTD.</small>
-        </span>
+      <a
+        href="#home"
+        class="brand"
+        :aria-label="t('JYD Corporation home')"
+        @click="navigate('home')"
+      >
+        <svg
+          class="header-logo"
+          viewBox="300 1380 4380 680"
+          role="img"
+          :aria-label="t('JYD Corporation home')"
+        >
+          <image
+            href="/images/jyd-footer-logo.png"
+            width="4961"
+            height="3508"
+          />
+        </svg>
       </a>
-      <nav :aria-label="t('Main navigation')" :class="{ open: menuOpen }">
-        <a v-for="item in navigation" :key="item.id" :href="`#${item.id}`"
-          :class="{ active: activeSection === item.id }" @click="navigate(item.id)">
+      <nav
+        :aria-label="t('Main navigation')"
+        :class="{ open: menuOpen }"
+      >
+        <a
+          v-for="item in navigation"
+          :key="item.id"
+          :href="`#${item.id}`"
+          :class="{ active: activeSection === item.id }"
+          @click="navigate(item.id)"
+        >
           {{ item.label }}
         </a>
       </nav>
-      <a class="nav-cta" href="#contact">
+      <a
+        class="nav-cta"
+        href="#contact"
+      >
         {{ t('Talk to our team') }}
         <ArrowUpRight :size="17" />
       </a>
 
-      <div class="language-switcher" role="group" aria-label="Language / ภาษา / 语言">
-        <button type="button" :class="{ selected: language === 'th' }" :aria-pressed="language === 'th'"
-          aria-label="เปลี่ยนเป็นภาษาไทย" @click="setLanguage('th')">
+      <div
+        class="language-switcher"
+        role="group"
+        aria-label="Language / ภาษา / 语言"
+      >
+        <button
+          type="button"
+          :class="{ selected: language === 'th' }"
+          :aria-pressed="language === 'th'"
+          aria-label="เปลี่ยนเป็นภาษาไทย"
+          @click="setLanguage('th')"
+        >
           TH
         </button>
         <span aria-hidden="true">/</span>
-        <button type="button" :class="{ selected: language === 'en' }" :aria-pressed="language === 'en'"
-          aria-label="Switch to English" @click="setLanguage('en')">
+        <button
+          type="button"
+          :class="{ selected: language === 'en' }"
+          :aria-pressed="language === 'en'"
+          aria-label="Switch to English"
+          @click="setLanguage('en')"
+        >
           EN
         </button>
         <span aria-hidden="true">/</span>
-        <button type="button" :class="{ selected: language === 'zh' }" :aria-pressed="language === 'zh'"
-          aria-label="切换至简体中文" @click="setLanguage('zh')">
+        <button
+          type="button"
+          :class="{ selected: language === 'zh' }"
+          :aria-pressed="language === 'zh'"
+          aria-label="切换至简体中文"
+          @click="setLanguage('zh')"
+        >
           中文
         </button>
       </div>
-      <button class="menu-toggle" :aria-expanded="menuOpen" :aria-label="menuOpen ? t('Close menu') : t('Open menu')"
-        @click="menuOpen = !menuOpen">
+      <button
+        class="menu-toggle"
+        :aria-expanded="menuOpen"
+        :aria-label="menuOpen ? t('Close menu') : t('Open menu')"
+        @click="menuOpen = !menuOpen"
+      >
         <X v-if="menuOpen" />
         <Menu v-else />
       </button>
@@ -220,9 +273,16 @@ onUnmounted(() => {
   </header>
 
   <main id="main">
-    <section id="home" class="hero">
-      <img class="hero-photo" src="/images/hero.jpg" :alt="t('Cargo ship, containers and a seaport')"
-        fetchpriority="high" />
+    <section
+      id="home"
+      class="hero"
+    >
+      <img
+        class="hero-photo"
+        src="/images/hero.jpg"
+        :alt="t('Cargo ship, containers and a seaport')"
+        fetchpriority="high"
+      />
       <div class="hero-shade"></div>
       <div class="container hero-inner reveal reveal-fade-up is-revealed">
         <p class="eyebrow light hero-anim hero-anim-1">
@@ -241,11 +301,17 @@ onUnmounted(() => {
           {{ t('Care for your cargo at every step of the journey.') }}
         </p>
         <div class="hero-actions hero-anim hero-anim-4">
-          <a class="button primary" href="#contact">
+          <a
+            class="button primary"
+            href="#contact"
+          >
             {{ t('Request advice / a quote') }}
             <ArrowUpRight :size="19" />
           </a>
-          <a class="button ghost" href="#services">
+          <a
+            class="button ghost"
+            href="#services"
+          >
             {{ t('Explore our services') }}
             <ArrowRight :size="18" />
           </a>
@@ -279,7 +345,10 @@ onUnmounted(() => {
             {{ t('Your business, connected.') }}
           </strong>
         </div>
-        <a href="#services" class="reveal-child">
+        <a
+          href="#services"
+          class="reveal-child"
+        >
           <span class="icon-circle">
             <Ship />
           </span>
@@ -289,7 +358,10 @@ onUnmounted(() => {
           </div>
           <ArrowUpRight :size="18" />
         </a>
-        <a href="#services" class="reveal-child">
+        <a
+          href="#services"
+          class="reveal-child"
+        >
           <span class="icon-circle">
             <Plane />
           </span>
@@ -299,7 +371,10 @@ onUnmounted(() => {
           </div>
           <ArrowUpRight :size="18" />
         </a>
-        <a href="#services" class="reveal-child">
+        <a
+          href="#services"
+          class="reveal-child"
+        >
           <span class="icon-circle">
             <Truck />
           </span>
@@ -312,10 +387,17 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <section id="about" class="section about-section">
+    <section
+      id="about"
+      class="section about-section"
+    >
       <div class="container about-grid">
         <div class="about-visual reveal reveal-fade-right">
-          <img src="/images/port.jpg" :alt="t('Seaport and container operations')" loading="lazy" />
+          <img
+            src="/images/port.jpg"
+            :alt="t('Seaport and container operations')"
+            loading="lazy"
+          />
           <div class="image-label">
             <span class="label-line"></span>
             CONNECTING YOUR BUSINESS TO THE WORLD
@@ -359,7 +441,10 @@ onUnmounted(() => {
               {{ t('Regular progress updates') }}
             </span>
           </div>
-          <a class="text-link" href="#contact">
+          <a
+            class="text-link"
+            href="#contact"
+          >
             {{ t('Tell us about your business') }}
             <ArrowUpRight :size="18" />
           </a>
@@ -367,7 +452,10 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <section id="services" class="section services-section">
+    <section
+      id="services"
+      class="section services-section"
+    >
       <div class="container">
         <div class="section-head reveal reveal-fade-up">
           <div>
@@ -385,10 +473,18 @@ onUnmounted(() => {
           </p>
         </div>
         <div class="services-grid reveal reveal-stagger">
-          <button v-for="(service, index) in company.services" :key="service.en" class="service-card reveal-child"
-            @click="selectedService = service">
+          <button
+            v-for="(service, index) in company.services"
+            :key="service.en"
+            class="service-card reveal-child"
+            @click="selectedService = service"
+          >
             <div class="card-top">
-              <component :is="icons[service.icon]" :size="29" :stroke-width="1.5" />
+              <component
+                :is="icons[service.icon]"
+                :size="29"
+                :stroke-width="1.5"
+              />
               <span>0{{ index + 1 }}</span>
             </div>
             <p class="service-en">{{ service.en }}</p>
@@ -411,33 +507,41 @@ onUnmounted(() => {
           <p>{{ t('Committed to dependable service, giving you confidence at every step.') }}</p>
         </div>
         <div class="values-grid reveal reveal-stagger">
-          <div v-for="value in [
-            {
-              icon: Zap,
-              en: 'SPEED',
-              title: t('Speed'),
-              text: t('Keep operations moving with coordination at every step.'),
-            },
-            {
-              icon: FileCheck2,
-              en: 'ACCURACY',
-              title: t('Accuracy'),
-              text: t('Careful documentation and procedures that follow customs requirements.'),
-            },
-            {
-              icon: ShieldCheck,
-              en: 'RELIABILITY',
-              title: t('Reliability'),
-              text: t('Professional service with attention to your cargo.'),
-            },
-            {
-              icon: Handshake,
-              en: 'TRANSPARENCY',
-              title: t('Transparency'),
-              text: t('Clear communication and updates throughout the process.'),
-            },
-          ]" :key="value.en" class="reveal-child">
-            <component :is="value.icon" :size="30" :stroke-width="1.5" />
+          <div
+            v-for="value in [
+              {
+                icon: Zap,
+                en: 'SPEED',
+                title: t('Speed'),
+                text: t('Keep operations moving with coordination at every step.'),
+              },
+              {
+                icon: FileCheck2,
+                en: 'ACCURACY',
+                title: t('Accuracy'),
+                text: t('Careful documentation and procedures that follow customs requirements.'),
+              },
+              {
+                icon: ShieldCheck,
+                en: 'RELIABILITY',
+                title: t('Reliability'),
+                text: t('Professional service with attention to your cargo.'),
+              },
+              {
+                icon: Handshake,
+                en: 'TRANSPARENCY',
+                title: t('Transparency'),
+                text: t('Clear communication and updates throughout the process.'),
+              },
+            ]"
+            :key="value.en"
+            class="reveal-child"
+          >
+            <component
+              :is="value.icon"
+              :size="30"
+              :stroke-width="1.5"
+            />
             <span>{{ value.en }}</span>
             <h3>{{ value.title }}</h3>
             <p>{{ value.text }}</p>
@@ -446,7 +550,10 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <section id="work" class="section gallery-section">
+    <section
+      id="work"
+      class="section gallery-section"
+    >
       <div class="container">
         <div class="section-head reveal reveal-fade-up">
           <div>
@@ -458,21 +565,40 @@ onUnmounted(() => {
               <span class="blue">{{ t('every delivery.') }}</span>
             </h2>
           </div>
-          <div class="filter-tabs" :aria-label="t('Filter work photos')">
-            <button v-for="filter in [
-              { id: 'all', label: t('All') },
-              { id: 'transport', label: t('Transport') },
-              { id: 'operations', label: t('Operations') },
-            ]" :key="filter.id" :class="{ selected: galleryFilter === filter.id }"
-              :aria-pressed="galleryFilter === filter.id" @click="galleryFilter = filter.id">
+          <div
+            class="filter-tabs"
+            :aria-label="t('Filter work photos')"
+          >
+            <button
+              v-for="filter in [
+                { id: 'all', label: t('All') },
+                { id: 'transport', label: t('Transport') },
+                { id: 'operations', label: t('Operations') },
+              ]"
+              :key="filter.id"
+              :class="{ selected: galleryFilter === filter.id }"
+              :aria-pressed="galleryFilter === filter.id"
+              @click="galleryFilter = filter.id"
+            >
               {{ filter.label }}
             </button>
           </div>
         </div>
-        <div class="gallery-grid reveal reveal-stagger">
-          <button v-for="item in filteredGallery" :key="item.src" class="gallery-card reveal-child"
-            @click="selectedImage = item">
-            <img :src="item.src" :alt="item.title" loading="lazy" />
+        <div
+          id="work-gallery"
+          class="gallery-grid work-gallery reveal reveal-stagger"
+        >
+          <button
+            v-for="(item, index) in visibleGallery"
+            :key="item.src"
+            class="gallery-card reveal-child"
+            @click="selectedImage = item"
+          >
+            <img
+              :src="index === 0 ? item.src : item.thumbnail || item.src"
+              :alt="item.title"
+              loading="lazy"
+            />
             <span class="expand-icon">
               <Maximize2 :size="18" />
             </span>
@@ -482,27 +608,52 @@ onUnmounted(() => {
             </div>
           </button>
         </div>
-        <p class="gallery-caption reveal reveal-fade-up">
-          {{ t('Operational photos from the JYD Corporation company profile.') }}
-        </p>
+        <div class="work-gallery-bottom">
+          <p class="gallery-caption">
+            {{ t('Work photos supplied by JYD Corporation.') }}
+          </p>
+          <button
+            v-if="filteredGallery.length > 6"
+            class="work-gallery-toggle"
+            type="button"
+            :aria-expanded="galleryExpanded"
+            aria-controls="work-gallery"
+            @click="toggleGallery"
+          >
+            {{ galleryExpanded ? t('Show fewer photos') : t('View more photos') }}
+            <ChevronDown
+              :size="16"
+              :class="{ expanded: galleryExpanded }"
+            />
+          </button>
+        </div>
       </div>
     </section>
 
     <div class="contact-banner reveal reveal-zoom">
       <div class="container">
-        <Globe2 :size="46" :stroke-width="1" />
+        <Globe2
+          :size="46"
+          :stroke-width="1"
+        />
         <div>
           <span>LET’S MOVE YOUR BUSINESS FORWARD</span>
           <h2>{{ t('Move your business forward with us') }}</h2>
         </div>
-        <a href="#contact" class="button white">
+        <a
+          href="#contact"
+          class="button white"
+        >
           {{ t('Contact our team') }}
           <ArrowUpRight :size="19" />
         </a>
       </div>
     </div>
 
-    <section id="contact" class="section contact-section">
+    <section
+      id="contact"
+      class="section contact-section"
+    >
       <div class="container contact-grid">
         <div class="reveal reveal-fade-right">
           <p class="eyebrow">GET IN TOUCH</p>
@@ -599,25 +750,14 @@ onUnmounted(() => {
               </div>
             </div>
           </div>
-          <div class="social-contacts">
-            <span>
-              <MessageCircle :size="19" />
-              LINE
-              <small>{{ t('Coming soon') }}</small>
-            </span>
-            <span>
-              <MessagesSquare :size="19" />
-              WeChat
-              <small>{{ t('Coming soon') }}</small>
-            </span>
-          </div>
+          <ContactQrCodes :translate="t" />
 
           <div class="contact-map">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3880.247893125745!2d101.01119047577664!3d13.45881090400808!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x311d37005276c17d%3A0xae43d8c12f0457f4!2sJYD%20Corporation!5e0!3m2!1sth!2sth!4v1792981075962!5m2!1sth!2sth"
               width="100%"
               height="230"
-              style="border:0;"
+              style="border: 0"
               allowfullscreen=""
               loading="lazy"
               referrerpolicy="strict-origin-when-cross-origin"
@@ -625,7 +765,10 @@ onUnmounted(() => {
             ></iframe>
           </div>
         </div>
-        <form class="inquiry-form reveal reveal-fade-left" @submit.prevent="submitInquiry">
+        <form
+          class="inquiry-form reveal reveal-fade-left"
+          @submit.prevent="submitInquiry"
+        >
           <div class="form-heading">
             <h3>{{ t('Request a callback') }}</h3>
             <span>REQUEST AN INQUIRY</span>
@@ -635,36 +778,65 @@ onUnmounted(() => {
             <label>
               {{ t('Contact name') }}
               <span>*</span>
-              <input v-model="form.name" required autocomplete="name" maxlength="100" :placeholder="t('Full name')" />
+              <input
+                v-model="form.name"
+                required
+                autocomplete="name"
+                maxlength="100"
+                :placeholder="t('Full name')"
+              />
             </label>
             <label>
               {{ t('Company name') }}
-              <input v-model="form.company" autocomplete="organization" maxlength="150"
-                :placeholder="t('Your company')" />
+              <input
+                v-model="form.company"
+                autocomplete="organization"
+                maxlength="150"
+                :placeholder="t('Your company')"
+              />
             </label>
           </div>
           <div class="form-row">
             <label>
               {{ t('Email') }}
               <span>*</span>
-              <input v-model="form.email" type="email" required autocomplete="email" maxlength="150"
-                placeholder="name@company.com" />
+              <input
+                v-model="form.email"
+                type="email"
+                required
+                autocomplete="email"
+                maxlength="150"
+                placeholder="name@company.com"
+              />
             </label>
             <label>
               {{ t('Phone number') }}
               <span>*</span>
-              <input v-model="form.phone" type="tel" required autocomplete="tel" pattern="[0-9+()\s\-]{8,20}"
+              <input
+                v-model="form.phone"
+                type="tel"
+                required
+                autocomplete="tel"
+                pattern="[0-9+()\s\-]{8,20}"
                 :title="t('Enter a phone number using 8–20 characters')"
-                :placeholder="t('Your preferred contact number')" />
+                :placeholder="t('Your preferred contact number')"
+              />
             </label>
           </div>
           <label>
             {{ t('Service of interest') }}
             <select v-model="form.service">
-              <option value="" disabled>
+              <option
+                value=""
+                disabled
+              >
                 {{ t('Select a service') }}
               </option>
-              <option v-for="service in company.services" :key="service.en" :value="service.en">
+              <option
+                v-for="service in company.services"
+                :key="service.en"
+                :value="service.en"
+              >
                 {{ service.title }}
               </option>
               <option value="other">{{ t('Other / Request advice') }}</option>
@@ -673,11 +845,20 @@ onUnmounted(() => {
           <label>
             {{ t('Additional details') }}
             <span>*</span>
-            <textarea v-model="form.message" required maxlength="3000" rows="3"
-              :placeholder="t('Cargo type, origin and destination, or what you need help with')"></textarea>
+            <textarea
+              v-model="form.message"
+              required
+              maxlength="3000"
+              rows="3"
+              :placeholder="t('Cargo type, origin and destination, or what you need help with')"
+            ></textarea>
           </label>
           <label class="consent">
-            <input v-model="form.consent" type="checkbox" required />
+            <input
+              v-model="form.consent"
+              type="checkbox"
+              required
+            />
             <span>
               {{
                 t(
@@ -686,24 +867,48 @@ onUnmounted(() => {
               }}
             </span>
           </label>
-          <div class="form-status" v-if="formStatus" role="status">
+          <div
+            class="form-status"
+            v-if="formStatus"
+            role="status"
+          >
             <CheckCircle2 :size="22" />
             <p>{{ formStatus }}</p>
           </div>
-          <button class="button primary submit" type="submit" :disabled="submitting">
+          <button
+            class="button primary submit"
+            type="submit"
+            :disabled="submitting"
+          >
             {{ submitting ? t('Sending...') : t('Send request') }}
             <ArrowUpRight :size="20" />
           </button>
-          <p class="demo-note">{{ t('Our team will contact you back using the details provided') }}</p>
+          <p class="demo-note">
+            {{ t('Our team will contact you back using the details provided') }}
+          </p>
         </form>
       </div>
     </section>
   </main>
   <footer class="reveal reveal-fade-up">
     <div class="container footer-main">
-      <a class="footer-brand" href="#home">
-        JYD
-        <span>CORPORATION CO., LTD.</span>
+      <a
+        class="footer-brand"
+        href="#home"
+      >
+        <!-- Frame the supplied logo without changing the original image file. -->
+        <svg
+          class="footer-logo"
+          viewBox="480 1160 3900 1390"
+          role="img"
+          :aria-label="t('JYD Corporation home')"
+        >
+          <image
+            href="/images/jyd-logo.png"
+            width="4962"
+            height="3508"
+          />
+        </svg>
       </a>
       <p>
         Your Cargo, Our Commitment.
@@ -723,28 +928,57 @@ onUnmounted(() => {
 
   <Teleport to="body">
     <Transition name="modal-fade">
-      <div v-if="selectedService || selectedImage" class="modal-backdrop" @click.self="closeDetails">
-        <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-          <button autofocus class="modal-close" :aria-label="t('Close details')" @click="closeDetails">
+      <div
+        v-if="selectedService || selectedImage"
+        class="modal-backdrop"
+        @click.self="closeDetails"
+      >
+        <section
+          class="modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <button
+            autofocus
+            class="modal-close"
+            :aria-label="t('Close details')"
+            @click="closeDetails"
+          >
             <X />
           </button>
           <template v-if="selectedService">
-            <component :is="icons[selectedService.icon]" class="blue" :size="40" />
+            <component
+              :is="icons[selectedService.icon]"
+              class="blue"
+              :size="40"
+            />
             <p class="eyebrow">{{ selectedService.en }}</p>
             <h2 id="modal-title">{{ selectedService.title }}</h2>
             <p class="body-copy">{{ selectedService.detail }}</p>
             <div class="tags">
-              <span v-for="tag in selectedService.tags" :key="tag">
+              <span
+                v-for="tag in selectedService.tags"
+                :key="tag"
+              >
                 {{ tag }}
               </span>
             </div>
-            <a href="#contact" class="button primary" @click="inquireAboutService">
+            <a
+              href="#contact"
+              class="button primary"
+              @click="inquireAboutService"
+            >
               {{ t('Ask about this service') }}
               <ArrowUpRight :size="18" />
             </a>
           </template>
           <template v-else>
-            <img class="modal-image" :src="selectedImage.src" :alt="selectedImage.title" />
+            <img
+              class="modal-image"
+              :src="selectedImage.src"
+              :alt="selectedImage.title"
+            />
             <h3 id="modal-title">{{ selectedImage.title }}</h3>
           </template>
         </section>

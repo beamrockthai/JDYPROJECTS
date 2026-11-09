@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Support direct links to Vue pages, including the admin area.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

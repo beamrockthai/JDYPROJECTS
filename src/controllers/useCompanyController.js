@@ -12,6 +12,7 @@ export function useCompanyController() {
   const selectedService = ref(null)
   const selectedImage = ref(null)
   const galleryFilter = ref('all')
+  const galleryExpanded = ref(false)
   const inquirySubmitted = ref(false)
   const submitting = ref(false)
   const submitError = ref(false)
@@ -39,6 +40,21 @@ export function useCompanyController() {
       (item) => galleryFilter.value === 'all' || item.category === galleryFilter.value,
     ),
   )
+  const visibleGallery = computed(() => {
+    if (galleryExpanded.value) {
+      return filteredGallery.value
+    }
+
+    return filteredGallery.value.slice(0, 6)
+  })
+
+  function toggleGallery() {
+    galleryExpanded.value = !galleryExpanded.value
+  }
+
+  watch(galleryFilter, () => {
+    galleryExpanded.value = false
+  })
   async function submitInquiry() {
     if (submitting.value) return
     submitting.value = true
@@ -91,6 +107,9 @@ export function useCompanyController() {
     selectedImage,
     galleryFilter,
     filteredGallery,
+    visibleGallery,
+    galleryExpanded,
+    toggleGallery,
     form,
     formStatus,
     submitting,

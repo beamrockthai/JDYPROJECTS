@@ -1,6 +1,22 @@
 // Simplified Chinese, using a formal business tone.
 // Retain the company's English legal name; no registered Chinese name was supplied.
 export default {
+  'Heavy equipment handling': '机械设备吊装与装卸',
+  'Container loading': '集装箱装货作业',
+  'Cargo transportation': '货物运输作业',
+  'Warehouse operations': '仓库作业',
+  'Forklift operations': '叉车搬运作业',
+  'On-site teamwork': '现场团队协调',
+  'Cargo securing': '货物装载与加固',
+  'Container transportation': '集装箱运输',
+  'View more photos': '查看更多照片',
+  'Show fewer photos': '收起照片',
+  'Work photos supplied by JYD Corporation.': '业务实景照片由 JYD Corporation 提供。',
+  'Contact us on LINE': '通过 LINE 联系我们',
+  'Contact us on WeChat': '通过微信联系我们',
+  'Enlarge QR code': '放大二维码',
+  'Scan to add us as a contact': '扫码添加联系人，与我们联系',
+  'Scan with LINE or WeChat to contact our team.': '请使用 LINE 或微信扫描二维码，联系业务团队。',
   Workspace: '工作空间',
   'Admin navigation': '管理导航',
   Overview: '概览',
@@ -196,7 +212,8 @@ export default {
     '本表单仅供演示，尚未连接提交系统，您的信息并未发送至本公司。如需咨询，请通过页面所列电话或电子邮箱与我们联系。',
   'Sending...': '发送中...',
   'Send request': '提交回访申请',
-  'Our team will contact you back using the details provided': '我们的团队将通过您提供的方式与您联系',
+  'Our team will contact you back using the details provided':
+    '我们的团队将通过您提供的方式与您联系',
   'Sorry, we could not send your details. Please try again or contact us by phone or email.':
     '抱歉，信息发送失败。请重试，或通过电话/邮箱联系我们。',
   'Thank you! We have received your details and our team will contact you shortly.':
