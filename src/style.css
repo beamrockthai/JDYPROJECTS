@@ -126,9 +126,9 @@ select:focus {
 }
 .header-logo {
   display: block;
-  width: 250px;
+  width: 120px;
   max-width: 40vw;
-  aspect-ratio: 4380 / 680;
+  aspect-ratio: 775 / 280;
   overflow: hidden;
 }
 .brand > span {
@@ -1079,16 +1079,17 @@ footer {
 }
 .footer-brand {
   display: block;
-  width: 120px;
+  width: 300px;
   max-width: 100%;
   flex-shrink: 0;
   padding: 10px 12px;
   border-radius: 4px;
 }
 .footer-logo {
+  filter: brightness(0) invert(1);
   display: block;
   width: 100%;
-  aspect-ratio: 3900 / 1390;
+  aspect-ratio: 4380 / 680;
   overflow: hidden;
 }
 .footer-main > p {

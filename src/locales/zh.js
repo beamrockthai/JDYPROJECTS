@@ -72,7 +72,7 @@ export default {
   'Close menu': '关闭菜单',
   'Open menu': '打开菜单',
   'Cargo ship, containers and a seaport': '货轮、集装箱与港口',
-  'Connecting trade.': '联通全球贸易',
+  'Connecting trade.': '连接全球贸易',
   'Caring for every': '悉心守护每一程',
   'shipment.': '货物运输。',
   'Import, export, customs clearance and domestic transport.':

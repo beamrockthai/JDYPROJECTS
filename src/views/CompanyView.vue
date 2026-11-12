@@ -175,9 +175,9 @@
           Info@jydcorp.com
         </a>
         <span class="top-divider"></span>
-        <a href="tel:0644453944">
+        <a :href="`tel:${company.officePhone.replaceAll('-', '')}`">
           <Phone :size="13" />
-          064-445-3944
+          {{ company.officePhone }}
         </a>
       </div>
     </div>
@@ -192,14 +192,14 @@
       >
         <svg
           class="header-logo"
-          viewBox="300 1380 4380 680"
+          viewBox="95 230 775 280"
           role="img"
           :aria-label="t('JYD Corporation home')"
         >
           <image
-            href="/images/jyd-footer-logo.png"
-            width="4961"
-            height="3508"
+            href="/images/logo_transparent.png"
+            width="996"
+            height="704"
           />
         </svg>
       </a>
@@ -353,7 +353,7 @@
             <Ship />
           </span>
           <div>
-            <strong>Sea Freight</strong>
+            <strong>SEA FREIGHT</strong>
             <span>{{ t('Ocean cargo services') }}</span>
           </div>
           <ArrowUpRight :size="18" />
@@ -366,7 +366,7 @@
             <Plane />
           </span>
           <div>
-            <strong>Air Freight</strong>
+            <strong>AIR FREIGHT</strong>
             <span>{{ t('Air cargo services') }}</span>
           </div>
           <ArrowUpRight :size="18" />
@@ -379,7 +379,7 @@
             <Truck />
           </span>
           <div>
-            <strong>Land Transport</strong>
+            <strong>TRANSPORT</strong>
             <span>{{ t('Road cargo services') }}</span>
           </div>
           <ArrowUpRight :size="18" />
@@ -899,13 +899,13 @@
         <!-- Frame the supplied logo without changing the original image file. -->
         <svg
           class="footer-logo"
-          viewBox="480 1160 3900 1390"
+          viewBox="300 1380 4380 680"
           role="img"
           :aria-label="t('JYD Corporation home')"
         >
           <image
-            href="/images/jyd-logo.png"
-            width="4962"
+            href="/images/jyd-footer-logo.png"
+            width="4961"
             height="3508"
           />
         </svg>

@@ -7,7 +7,7 @@ export function createCompany(t) {
     email: 'Info@jydcorp.com',
     managementEmail: 'Yada.jir@jydcorp.com',
     phone: '064-445-3944',
-    officePhone: '038-445-394',
+    officePhone: '033-144-499',
     contact: t('Jane'),
     contactRole: t('Management'),
     contactPerson: t('Jane (Management)'),
